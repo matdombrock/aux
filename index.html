@@ -1,0 +1,114 @@
+
+<script
+src="https://code.jquery.com/jquery-3.3.1.min.js"
+integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+crossorigin="anonymous"></script>
+<div class="main" id="main" onmousemove="move()">
+    <div class="controls">
+        <button onclick="stop()">stop</button>
+        <input type="range" min="20" max="20000" value="244" class="slider" id="freq"><span id="max-freq">max</span>
+        
+    </div>
+    <div class="text">WELCOME TO THE MACHINE</div>
+</div>
+        <script>
+        var context = new AudioContext();
+        var o = context.createOscillator();
+        var g = context.createGain();
+        var o2 = context.createOscillator();
+        var g2 = context.createGain();
+        
+        var gr = 0;
+        var gru = 0;
+        
+        o.type = "sine";
+        o.connect(g);
+        g.connect(context.destination);
+        o.start(0);
+
+        o2.type = "sine";
+        o2.connect(g2);
+        g2.connect(context.destination);
+        o2.start(0);
+        
+        function stop(){
+            o.connect(g);
+            g.connect(context.destination);
+            g.gain.exponentialRampToValueAtTime(
+                0.00001, context.currentTime + 0.04
+            );
+        }
+        function move(){
+            if(gr>100){
+                gru="down";
+                console.log("down");
+            }
+            if(gr<1){
+                gru="up";
+                console.log("up");
+            }
+            if(gru=="up"){
+                gr=gr+1;
+            }else{
+                gr=gr-1;
+            }
+            //console.log(gr);
+            o.frequency.value = event.clientX / $(window).width() * $("#freq").val();
+            o2.frequency.value = event.clientY/ $(window).height() * $("#freq").val();
+            console.log("o1: "+Math.round(o.frequency.value)+"  --  o12: "+Math.round(o2.frequency.value))
+           // console.log( event.clientY % 255);
+            $("#main").css('background', 'rgb('+event.clientY / $(window).height() * 100+','+gr+','+event.clientX / $(window).width() * 100+')');
+            $("body").css('background', 'rgb('+event.clientX / $(window).width() * 100+','+gr+','+event.clientY / $(window).height() * 100+')');
+            $("#max-freq").text($("#freq").val());
+        }
+var slider = document.getElementById("freq");
+slider.oninput = function() {
+    $("#max-freq").text(this.value);
+}
+$(document).ready(function(){
+    $('#main').bind('mousewheel', function(e){
+        $cv = $("#freq").val();
+        if(e.originalEvent.wheelDelta /120 > 0) {
+            console.log('scrolling up !');
+            $("#freq").val(parseInt($cv)+128);
+            $("#max-freq").text($("#freq").val());
+            move();
+        }
+        else{
+            console.log('scrolling down !');
+            $("#freq").val($cv-128);
+            $("#max-freq").text($("#freq").val());
+            move();
+        }
+    });
+});
+
+        </script>
+
+<style>
+
+        .main{
+            background:rgb(0, 102, 255);
+            height:100%;
+            font-family: Impact, Charcoal, sans-serif;
+            cursor:help;
+        }
+        #max-freq{
+            background:black;
+            color:white;
+        }
+        .text{
+            position:relative;
+            margin:0 auto;
+            text-align:center;
+            top:25%;
+            color:white;
+            font-size:5em;
+            text-decoration: underline;
+            font-weight:bolder;
+        }
+        
+        .controls, .text{
+           display:none;
+        }
+    </style>
